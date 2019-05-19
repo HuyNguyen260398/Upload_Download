@@ -1,0 +1,169 @@
+﻿<style>
+    .avatarDiv {
+        position: relative;
+        width: 128px;
+        height: 128px;
+    }
+
+    .caption {
+        display: none;
+        position: absolute;
+        background: rgba(0, 0, 0, 0.4);
+        width: 128px;
+        height: 128px;
+        line-height: 128px;
+    }
+
+        .caption p {
+            padding: 4px;
+        }
+</style>
+
+<div class="jumbotron">
+    <h1>ASP.NET</h1>
+    <p class="lead">Using Web API Service in ASP.NET MVC: User Profile Avatar Change Demo</p>
+    <p><a href="https://asp.net" class="btn btn-primary btn-lg">Learn more &raquo;</a></p>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <h2>Getting started</h2>
+        <p>
+            ASP.NET Web API is a framework that makes it easy to build HTTP services that reach
+            a broad range of clients, including browsers and mobile devices. ASP.NET Web API
+            is an ideal platform for building RESTful applications on the .NET Framework.
+        </p>
+        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301870">Learn more &raquo;</a></p>
+    </div>
+    <div class="col-md-4">
+        <h2>Get more libraries</h2>
+        <p>NuGet is a free Visual Studio extension that makes it easy to add, remove, and update libraries and tools in Visual Studio projects.</p>
+        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301871">Learn more &raquo;</a></p>
+    </div>
+    <div class="col-md-4">
+        <h2>Web Hosting</h2>
+        <p>You can easily find a web hosting company that offers the right mix of features and price for your applications.</p>
+        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301872">Learn more &raquo;</a></p>
+    </div>
+</div>
+
+<div id="notification">
+
+</div>
+
+<form role="form">
+    <div class="form-group">
+        <div class="avatarDiv">
+            <div class="caption">
+                <p>
+                    <input type="button" class="btn btn-warning text-center" onclick="showImagePreview();" value="Choose Avatar" />
+                </p>
+            </div>
+            <img alt="Avatar" src="~/Avatar/anonymous.gif" class="img-rounded" width="128" height="128" id="imgAvatar" />
+            <input id="iUserAvatar" type="file" style="height:0; width:0; visibility:hidden" />
+        </div>
+    </div>
+    <div class="form-group form-inline">
+        <input id="txtUserId" type="text" class="form-control" placeholder="Enter UserId to get or set avatar" />
+    </div>
+    <div class="form-group form-inline">
+        <input id="btnGetUserAvatar" type="button" width="128" class="btn btn-primary" value="Get Avatar" />
+        <input id="btnSetUserAvatar" type="button" width="128" class="btn btn-primary" value="Set Avatar" />
+    </div>
+</form>
+
+
+
+@section scripts{
+    <script>
+
+        function AjaxRequest(methodName, methodType, data, callback) {
+            $.ajax({
+                type: methodType,
+                url: "api/" + methodName,
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (result, status, xhr) {
+                    //When success the callback function is called
+                    if (callback) {
+                        callback(result);
+                    }
+                }
+            });
+        }
+
+        function getUserAvatar() {
+            AjaxRequest("Avatar?userId=" + $("#txtUserId").val(), "GET", {}, getCompletedUserAvatar);
+        }
+
+        function getCompletedUserAvatar(data) {
+            if (data.UserAvatarBase64String !== null) {
+                $("#imgAvatar").attr("src", "data:image/jpg;base64," + data.UserAvatarBase64String);
+            } else {
+                showAlertInfo("alert-danger", "No user have this UserId. Please check again!");
+            }
+        }
+
+        $("#btnGetUserAvatar").click(function () {
+            getUserAvatar();
+        });
+
+        function showAlertInfo(alertClass, alertMessage) {
+            $('#notification').html("<div class='alert-info'><div  class='alert " + alertClass + " alert-dismissible fade in'><button type='button' class='close' data-dismiss='alert' aria-label='Close'><span aria-hidden='true'>×</span></button><strong>" + alertMessage + "</strong></div></div>");
+            $("#notification").fadeTo(2000, 500).slideUp(500, function () {
+                $('#alert-info').alert('close');
+            });
+        }
+
+        function showImagePreview() {
+            var fileInput = $("#iUserAvatar");
+            if (fileInput !== null) {
+                //Open file dialog to choose image
+                fileInput.trigger("click");
+                fileInput.change(function () {
+                    if (this.files && this.files[0]) {
+                        //When choose image complete using FileReader to convert image to Base64 string
+                        var reader = new FileReader();
+                        reader.onload = function (e) {
+                            $('#imgAvatar').attr('src', e.target.result);
+                        }
+                        reader.readAsDataURL(this.files[0])
+                    }
+                });
+            }
+        }
+
+        function setUserAvatar() {
+            var userObject = {};
+            userObject.UserId = $("#txtUserId").val();
+            userObject.UserAvatarBase64String = $("#imgAvatar").attr("src").split(",")[1];
+            AjaxRequest("Avatar", "POST", userObject, setAvatarCompleted);
+        }
+
+        $("#btnSetUserAvatar").click(function () {
+            setUserAvatar();
+        });
+
+        //Callback when complete upload avatar
+        //Created by tungnt.net - 6/2015
+        function setAvatarCompleted(data) {
+            if (data === true) {
+                showAlertInfo("alert-success", "User profile avatar is saved successful!");
+            }
+
+            $(document).ready(function () {
+                //Show-hide button choose avatar when hover image.
+                $(function () {
+                    $('.avatarDiv').hover(function () {
+                        $(this).find('.caption').slideDown(250);
+                    },
+                        function () {
+                            $(this).find('.caption').slideUp(250);
+                        });
+                });
+            });
+        }
+
+    </script>
+}

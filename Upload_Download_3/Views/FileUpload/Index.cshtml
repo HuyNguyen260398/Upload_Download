@@ -1,0 +1,74 @@
+﻿@model List<string>
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Index</title>
+</head>
+<body>
+    <div>
+        <h2>Basic File Upload</h2>
+
+        @using (Html.BeginForm("Index", "FileUpload", FormMethod.Post, new { enctype = "multipart/form-data" }))
+        {
+            <label for="file">Upload File: </label>
+            <input type="file" name="file" id="loadfile" />
+            <br />
+            <br />
+            <input type="submit" value="Upload File" />
+            <br />
+            <br />
+            @ViewBag.Message
+            <br />
+        }
+
+        <h2>@ViewBag.Today</h2>
+
+        <br />
+
+        <h2 style="color:red">@ViewBag.Deadline</h2>
+
+        <br />
+
+        <h2>Files List</h2>
+
+        <table>
+            <tr>
+                <th>File Name</th>
+                <th>Link</th>
+            </tr>
+            @for (var i = 0; i <= (Model.Count - 1); i++)
+            {
+                <tr>
+                    <td>@Model[i] </td>
+                    <td>@Html.ActionLink("Download", "Download", new { FileName = Model[i] })</td>
+                </tr>
+            }
+        </table>
+        <br />
+        <br />
+        <a href=@Url.Action("Zip","FileUpload")>Download All As Zip</a>
+    </div>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+    <script>
+        var myfile = "";
+        var isValid = true;
+
+        $('#loadfile').on('change', function () {
+            myfile = $(this).val();
+            var ext = myfile.split('.').pop();
+            if (ext == "pdf" || ext == "docx" || ext == "doc" || ext == "jpeg" || ext == "jpg" || ext == "png" || ext == "gif") {
+                alert(ext);
+            } else {
+                isValid = false;
+                alert(ext);
+            }
+        });
+    </script>
+</body>
+</html>
